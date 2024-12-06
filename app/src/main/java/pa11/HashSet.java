@@ -2,20 +2,18 @@ package pa11;
 
 public class HashSet {
 
-    /**
-     * Constructor for the set
-     */
+    int size;
+    int capacity;
+    String[] arr;
+    
     public HashSet() {
-        System.out.println("HashSet");
+        capacity = 4;
+        arr = new String[4];
     }
 
-    /**
-     * Size of the set
-     * @return the number of elements in the set
-     */
+    
     public int size() {
-        System.out.println("Size");
-        return 0;
+        return size;
     }
 
     /** 
@@ -23,16 +21,50 @@ public class HashSet {
      * @return a boolean indicating whether the set is empty
      */
     public boolean isEmpty() {
-        return false;
+        return size == 0;
     }
-
+    
+    
     /**
      * Add an element to the set
      * @param s the element to add
      * @return the old value associated with the key, or null if no such entry exists
      */
+    private void addHelper(String s, String[] array) {
+    	size++;
+    	if (size / (double) capacity > 0.5) {
+    		capacity *= 2;
+    		String[] newArr = new String[capacity];
+    		for (int i=0; i< arr.length; i++) {
+    			if (arr[i] != null && !"".equals(arr[i])) {
+    				size--;
+    				addHelper(arr[i], newArr);
+    			}
+    		}
+    		arr = newArr;
+    		array = arr;
+    	}
+    	
+    	
+    	int val = 0;
+    	for (int i=0; i<s.length(); i++)
+    		val += (int) s.charAt(i);
+    	
+        val %= capacity;
+        int i = 1;
+        while (true) {
+        	int next_probe = i*(i-1)/2;
+        	if (array[(val + next_probe) % capacity] == null || "".equals(array[(val + next_probe) % capacity])) {
+        		array[(val + next_probe) % capacity] = s;
+        		return;
+        	}
+        	i++;
+        }
+    }
+    
     public void add(String s) {
-        System.out.println("Adding " + s);
+    	if (!this.contains(s))
+    		this.addHelper(s, arr);
     }
 
     /** 
@@ -41,7 +73,24 @@ public class HashSet {
      * @return the value associated with the key, or null if no such entry exists
      */
     public void remove(String s) {
-        System.out.println("Removing " + s);
+    	if (s == null)
+    		return;
+    	int val = 0;
+    	for (int i=0; i<s.length(); i++)
+    		val += (int) s.charAt(i);
+    	
+        val %= capacity;
+        int i = 1;
+        for (int dummy=0; dummy<capacity; dummy++) {
+        	int next_probe = i*(i-1)/2;
+        	if (s.equals(arr[(val + next_probe) % capacity])) {
+        		arr[(val + next_probe) % capacity] = "";
+        		size--;
+        		return;
+        	}
+        	if (arr[(val + next_probe) % capacity] == null)
+        		return;
+        }
     }
 
     /** 
@@ -50,7 +99,22 @@ public class HashSet {
      * @return a boolean indicating whether the set contains the element
      */
     public boolean contains(String s) {
-        System.out.println("Contains " + s);
+    	if (s == null)
+    		return false;
+    	int val = 0;
+    	for (int i=0; i<s.length(); i++)
+    		val += (int) s.charAt(i);
+    	
+        val %= capacity;
+        int i = 1;
+        for (int dummy=0; dummy<capacity; dummy++) {
+        	int next_probe = i*(i-1)/2;
+        	if (arr[(val + next_probe) % capacity] == null)
+        		return false;
+        	if (s.equals(arr[(val + next_probe) % capacity])) {
+        		return true;
+        	}
+        }
         return false;
     }
 
@@ -58,7 +122,9 @@ public class HashSet {
      * Clears the set
      */
     public void clear() {
-        System.out.println("Clear");
+    	size = 0;
+        for (int i = 0; i<arr.length; i++)
+        	arr[i] = null;
     }
 
     /** 
@@ -66,7 +132,15 @@ public class HashSet {
      * @return an array containing all the elements in the set
      */
     public String[] toArray() {
-        return null;
+       String[] res = new String[size];
+       int idx = 0;
+       for (int i=0; i<arr.length; i++) {
+    	   if (arr[i] != null && !"".equals(arr[i])) {
+    		   res[idx] = arr[i];
+    		   idx++;
+    	   }
+       }
+       return res;
     }
 
     /** 
@@ -75,7 +149,12 @@ public class HashSet {
      * @return a new `HashSet` containing the intersection of the current set and the `other` set
      */
     public HashSet intersection(HashSet other) {
-        return null;
+        HashSet res = new HashSet();
+        String[] set1 = this.toArray();
+        for (String st: set1)
+        	if (other.contains(st))
+        		res.add(st);
+        return res;
     }
 
     /** 
@@ -84,7 +163,14 @@ public class HashSet {
      * @return a new `HashSet` containing the union of the current set and the `other` set
      */
     public HashSet union(HashSet other) {
-        return null;
+    	HashSet res = new HashSet();
+        String[] set1 = this.toArray();
+        String[] set2 = other.toArray();
+        for (String st: set1)
+        	res.add(st);
+        for (String st: set2)
+        	res.add(st);
+        return res;
     }
 
     /** 
@@ -93,7 +179,12 @@ public class HashSet {
      * @return a new `HashSet` containing the difference of the current set and the `other` set
      */
     public HashSet difference(HashSet other) {
-        return null;
+    	HashSet res = new HashSet();
+        String[] set1 = this.toArray();
+        for (String st: set1)
+        	if (!other.contains(st))
+        		res.add(st);
+        return res;
     }
 
     /** 
@@ -102,7 +193,11 @@ public class HashSet {
      * @return a boolean indicating whether the current set is a subset of the `other` set
      */
     public boolean subset(HashSet other) {
-        return false;
+        String[] set1 = this.toArray();
+        for (String st: set1)
+        	if (!other.contains(st))
+        		return false;
+        return true;
     }
         
 }
